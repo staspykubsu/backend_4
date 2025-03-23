@@ -18,7 +18,7 @@ def create_connection():
             cursorclass=pymysql.cursors.DictCursor
         )
     except pymysql.Error as e:
-        print(f"Ошибка подключения к базы данных: {e}")
+        print(f"Ошибка подключения к базе данных: {e}")
     return connection
 
 def validate_form(data):
@@ -115,9 +115,84 @@ def get_cookie(key):
 def delete_cookie(key):
     set_cookie(key, '', max_age=0)
 
-if __name__ == "__main__":
+def generate_form(errors=None):
     print("Content-Type: text/html; charset=utf-8\n")
+    print("""
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Форма</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <form action="submit_form.py" method="POST">
+    """)
+    
+    # Вывод ошибок, если они есть
+    if errors:
+        print("<h1>Ошибки:</h1>")
+        for field, error in errors.items():
+            print(f"<p style='color: red;'>{error}</p>")
+    
+    # Поля формы с подстановкой значений из Cookies
+    print(f"""
+        <label for="last_name">Фамилия:</label>
+        <input type="text" id="last_name" name="last_name" maxlength="50" required value="{get_cookie('last_name') or ''}"><br>
 
+        <label for="first_name">Имя:</label>
+        <input type="text" id="first_name" name="first_name" maxlength="50" required value="{get_cookie('first_name') or ''}"><br>
+
+        <label for="patronymic">Отчество:</label>
+        <input type="text" id="patronymic" name="patronymic" maxlength="50" value="{get_cookie('patronymic') or ''}"><br>
+
+        <label for="phone">Телефон:</label>
+        <input type="tel" id="phone" name="phone" required value="{get_cookie('phone') or ''}"><br>
+
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required value="{get_cookie('email') or ''}"><br>
+
+        <label for="birthdate">Дата рождения:</label>
+        <input type="date" id="birthdate" name="birthdate" required value="{get_cookie('birthdate') or ''}"><br>
+
+        <label>Пол:</label>
+        <label for="male">Мужской</label>
+        <input type="radio" id="male" name="gender" value="male" required {'checked' if get_cookie('gender') == 'male' else ''}>
+        <label for="female">Женский</label>
+        <input type="radio" id="female" name="gender" value="female" required {'checked' if get_cookie('gender') == 'female' else ''}><br>
+
+        <label for="languages">Любимый язык программирования:</label>
+        <select id="languages" name="languages[]" multiple required>
+    """)
+    
+    languages = ['Pascal', 'C', 'C++', 'JavaScript', 'PHP', 'Python', 'Java', 'Haskel', 'Clojure', 'Prolog', 'Scala', 'Go']
+    selected_languages = get_cookie('languages')
+    if selected_languages:
+        selected_languages = selected_languages.split(',')
+    else:
+        selected_languages = []
+    
+    for language in languages:
+        selected = 'selected' if language in selected_languages else ''
+        print(f"<option value='{language}' {selected}>{language}</option>")
+    
+    print("""
+        </select><br>
+
+        <label for="bio">Биография:</label>
+        <textarea id="bio" name="bio" rows="4" required>{get_cookie('bio') or ''}</textarea><br>
+
+        <label for="contract">С контрактом ознакомлен(а)</label>
+        <input type="checkbox" id="contract" name="contract" required {'checked' if get_cookie('contract') == 'on' else ''}><br>
+
+        <button type="submit">Сохранить</button>
+        </form>
+    </body>
+    </html>
+    """)
+
+if __name__ == "__main__":
     form = cgi.FieldStorage()
     data = {
         'last_name': form.getvalue('last_name', '').strip(),
@@ -138,7 +213,7 @@ if __name__ == "__main__":
             set_cookie(key, value)
         for key, error in errors.items():
             set_cookie(f'error_{key}', error)
-        print("Location: index.html\n")
+        generate_form(errors)
     else:
         connection = create_connection()
         if connection:
@@ -146,4 +221,4 @@ if __name__ == "__main__":
             connection.close()
             for key, value in data.items():
                 set_cookie(key, value, max_age=31536000)  # 1 год
-            print("Location: index.html\n")
+            generate_form()
