@@ -1,1 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <form action="submit_form.py" method="POST">
+        <label for="last_name">Фамилия:</label>
+        <input type="text" id="last_name" name="last_name" maxlength="50" required
+               value="<%= last_name %>" class="<%= last_name_error ? 'error' : '' %>">
+        <span class="error-message"><%= last_name_error %></span><br>
 
+        <label for="first_name">Имя:</label>
+        <input type="text" id="first_name" name="first_name" maxlength="50" required
+               value="<%= first_name %>" class="<%= first_name_error ? 'error' : '' %>">
+        <span class="error-message"><%= first_name_error %></span><br>
+
+        <label for="patronymic">Отчество:</label>
+        <input type="text" id="patronymic" name="patronymic" maxlength="50"
+               value="<%= patronymic %>" class="<%= patronymic_error ? 'error' : '' %>">
+        <span class="error-message"><%= patronymic_error %></span><br>
+
+        <label for="phone">Телефон:</label>
+        <input type="tel" id="phone" name="phone" required
+               value="<%= phone %>" class="<%= phone_error ? 'error' : '' %>">
+        <span class="error-message"><%= phone_error %></span><br>
+
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required
+               value="<%= email %>" class="<%= email_error ? 'error' : '' %>">
+        <span class="error-message"><%= email_error %></span><br>
+
+        <label for="birthdate">Дата рождения:</label>
+        <input type="date" id="birthdate" name="birthdate" required
+               value="<%= birthdate %>" class="<%= birthdate_error ? 'error' : '' %>">
+        <span class="error-message"><%= birthdate_error %></span><br>
+
+        <label>Пол:</label>
+        <label for="male">Мужской</label>
+        <input type="radio" id="male" name="gender" value="male" required <%= gender === 'male' ? 'checked' : '' %>>
+        <label for="female">Женский</label>
+        <input type="radio" id="female" name="gender" value="female" required <%= gender === 'female' ? 'checked' : '' %>>
+        <span class="error-message"><%= gender_error %></span><br>
+
+        <label for="languages">Любимый язык программирования:</label>
+        <select id="languages" name="languages[]" multiple required>
+            <option value="Pascal" <%= languages.includes('Pascal') ? 'selected' : '' %>>Pascal</option>
+            <option value="C" <%= languages.includes('C') ? 'selected' : '' %>>C</option>
+            <option value="C++" <%= languages.includes('C++') ? 'selected' : '' %>>C++</option>
+            <option value="JavaScript" <%= languages.includes('JavaScript') ? 'selected' : '' %>>JavaScript</option>
+            <option value="PHP" <%= languages.includes('PHP') ? 'selected' : '' %>>PHP</option>
+            <option value="Python" <%= languages.includes('Python') ? 'selected' : '' %>>Python</option>
+            <option value="Java" <%= languages.includes('Java') ? 'selected' : '' %>>Java</option>
+            <option value="Haskel" <%= languages.includes('Haskel') ? 'selected' : '' %>>Haskel</option>
+            <option value="Clojure" <%= languages.includes('Clojure') ? 'selected' : '' %>>Clojure</option>
+            <option value="Prolog" <%= languages.includes('Prolog') ? 'selected' : '' %>>Prolog</option>
+            <option value="Scala" <%= languages.includes('Scala') ? 'selected' : '' %>>Scala</option>
+            <option value="Go" <%= languages.includes('Go') ? 'selected' : '' %>>Go</option>
+        </select>
+        <span class="error-message"><%= languages_error %></span><br>
+
+        <label for="bio">Биография:</label>
+        <textarea id="bio" name="bio" rows="4" required class="<%= bio_error ? 'error' : '' %>"><%= bio %></textarea>
+        <span class="error-message"><%= bio_error %></span><br>
+
+        <label for="contract">С контрактом ознакомлен(а)</label>
+        <input type="checkbox" id="contract" name="contract" required <%= contract ? 'checked' : '' %>>
+        <span class="error-message"><%= contract_error %></span><br>
+
+        <button type="submit">Сохранить</button>
+    </form>
+</body>
+</html>
