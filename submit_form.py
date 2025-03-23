@@ -11,7 +11,7 @@ import os
 def create_connection():
     try:
         return pymysql.connect(
-            host='158.160.150.89',
+            host='130.193.44.145',
             user='u68593',
             password='9258357',
             database='web_db',
@@ -54,7 +54,7 @@ def validate_form(data):
     if 'languages' not in data or not data['languages']:
         errors['languages'] = "Выберите хотя бы один язык программирования."
 
-    if 'contract' not in data or data['contract'] != 'on':
+    if 'contract' not in data or not data['contract']:
         errors['contract'] = "Необходимо подтвердить ознакомление с контрактом."
 
     return errors
@@ -71,7 +71,7 @@ def generate_html_form(data, errors):
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-        <form action="submit_form.py" method="POST">
+        <form action="" method="POST">
             <label for="last_name">Фамилия:</label>
             <input type="text" id="last_name" name="last_name" maxlength="50" required
                    value="{last_name}" class="{last_name_error_class}">
@@ -185,6 +185,49 @@ def generate_html_form(data, errors):
 
     return html.format(**context)
 
+def insert_user_data(connection, data):
+    cursor = connection.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO applications (last_name, first_name, patronymic, phone, email, birthdate, gender, bio, contract)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            data['last_name'], data['first_name'], data['patronymic'],
+            data['phone'], data['email'], data['birthdate'],
+            data['gender'], data['bio'], data['contract']
+        ))
+        
+        application_id = cursor.lastrowid
+
+        language_ids = {
+            'Pascal': 1,
+            'C': 2,
+            'C++': 3,
+            'JavaScript': 4,
+            'PHP': 5,
+            'Python': 6,
+            'Java': 7,
+            'Haskel': 8,
+            'Clojure': 9,
+            'Prolog': 10,
+            'Scala': 11,
+            'Go': 12
+        }
+
+        for language in data['languages']:
+            language_id = language_ids.get(language)
+            if language_id:
+                cursor.execute("""
+                    INSERT INTO application_languages (application_id, language_id)
+                    VALUES (%s, %s)
+                """, (application_id, language_id))
+        
+        connection.commit()
+    except pymysql.Error as e:
+        print(f"Ошибка при вставке данных: {e}")
+    finally:
+        cursor.close()
+
 # Главная функция
 if __name__ == "__main__":
     print("Content-Type: text/html; charset=utf-8\n")
@@ -204,7 +247,7 @@ if __name__ == "__main__":
         'gender': form.getvalue('gender', '').strip(),
         'languages': form.getlist('languages[]'),
         'bio': form.getvalue('bio', '').strip(),
-        'contract': form.getvalue('contract', '') == 'on'
+        'contract': 'contract' in form  # Проверяем наличие ключа 'contract'
     }
 
     # Если данные пустые, берем их из Cookies
